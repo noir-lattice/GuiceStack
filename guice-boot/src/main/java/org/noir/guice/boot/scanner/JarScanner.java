@@ -10,6 +10,11 @@ import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * Jar sacnner
+ *
+ * jar包下扫描
+ */
 public class JarScanner implements ClassScanner {
 
 

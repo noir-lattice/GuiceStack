@@ -5,6 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
+/**
+ * File scanner
+ *
+ * 文件扫描
+ */
 public class FileScanner implements ClassScanner {
 
     private final String classpath;
