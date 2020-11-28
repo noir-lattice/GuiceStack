@@ -1,13 +1,16 @@
 package org.noir.guice.boot.executor.binder.impl;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.google.common.base.Strings;
 import com.google.inject.Binder;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
-import com.google.inject.binder.AnnotatedBindingBuilder;
-import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.name.Names;
 
 import org.noir.guice.boot.annotations.Injectable;
@@ -18,30 +21,63 @@ import org.slf4j.LoggerFactory;
 /**
  * Instance binder
  * 
- * 默认所有注入到Guice容器的实例将通过该binder进行，实现
- * 了自动的接口注入填充;重复接口实现填充Named;
+ * 默认所有注入到Guice容器的实例将通过该binder进行，实现了自动的接口注入填充;重复接口实现填充Named;
  */
 public class InstanceBinder implements ClassBinder {
     private static final Logger logger = LoggerFactory.getLogger(BeforeBindPostProcessorBinder.class);
 
+    private Map<Type, List<Class<?>>> genericInterfaceImplMap = new HashMap<>(256);
+
     @Override
     public void apply(List<Class<?>> classes, Binder binder) {
-        // TODO: 实现接口绑定与冲突实现的自动naming
-        for (Class<?> clazz : classes) {
-            Type[] genericInterfaces = clazz.getGenericInterfaces();
-            Injectable annotation = clazz.getAnnotation(Injectable.class);
-            for (Type genericInterface : genericInterfaces) {
-                AnnotatedBindingBuilder builder = binder.bind((TypeLiteral) TypeLiteral.get(genericInterface));
-                LinkedBindingBuilder linkedBindingBuilder = builder;
-                if (!annotation.named().equals("")) {
-                    linkedBindingBuilder = builder.annotatedWith(Names.named(annotation.named()));
-                }
-                linkedBindingBuilder.to(clazz).in(Scopes.SINGLETON);
-                logger.info("Bond injectable: {} to {}", genericInterface.getTypeName(), clazz.getName());
-            }
-            logger.info("Bond injectable: {}", clazz.getName());
-        }
-
+        classes = filterSupportClasses(classes);
+        classes.forEach(this::analysisClassGeneric);
+        bindGenericClass(binder);
     }
-    
+
+    private boolean isSupport(Class<?> clazz) {
+        return clazz.getAnnotation(Injectable.class) != null;
+    }
+
+    private List<Class<?>> filterSupportClasses(List<Class<?>> classes) {
+        return classes.stream().filter(this::isSupport).collect(Collectors.toList());
+    }
+
+    private void analysisClassGeneric(Class<?> clazz) {
+        logger.info("Bond injectable: {}", clazz.getName());
+        Type[] genericInterfaces = clazz.getGenericInterfaces();
+        for (Type type : genericInterfaces) {
+            if (!genericInterfaceImplMap.containsKey(type)) {
+                List<Class<?>> container = new ArrayList<>();
+                genericInterfaceImplMap.put(type, container);
+            }
+            genericInterfaceImplMap.get(type).add(clazz);
+        }
+    }
+
+    private void bindGenericClass(Binder binder) {
+        for (var entry : genericInterfaceImplMap.entrySet()) {
+            for (var target : entry.getValue()) {
+                Injectable injectableAnt = target.getAnnotation(Injectable.class);
+                String simpleName = target.getSimpleName();
+                String name = target.getName();
+                String antName = injectableAnt.named();
+                bindTypeTargetWithName(binder, entry.getKey(), target, name);
+                bindTypeTargetWithName(binder, entry.getKey(), target, simpleName);
+                bindTypeTargetWithName(binder, entry.getKey(), target, antName);
+            }
+        }
+    }
+
+    private void bindTypeTargetWithName(Binder binder, Type type, Class<?> target, String name) {
+        if (Strings.isNullOrEmpty(name)) {
+            return;
+        }
+        binder.bind(TypeLiteral.get(type))
+            .annotatedWith(Names.named(name))
+            .to((Class) target)
+            .in(Scopes.SINGLETON);
+        logger.info("Bond {} to {} with {}", type.getTypeName(), target.getName(), name);
+    }
+
 }
