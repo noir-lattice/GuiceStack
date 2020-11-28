@@ -33,4 +33,6 @@ out/
 ### VS Code ###
 .vscode/
 
+**/target/
+
 local.properties
