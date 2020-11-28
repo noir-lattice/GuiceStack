@@ -2,118 +2,68 @@ package org.noir.guice.boot.executor;
 
 import com.google.inject.*;
 import com.google.inject.Module;
-import com.google.inject.binder.AnnotatedBindingBuilder;
-import com.google.inject.binder.LinkedBindingBuilder;
-import com.google.inject.name.Names;
-import org.noir.guice.boot.annotations.Injectable;
-import org.noir.guice.boot.executor.func.AfterBindPostProcessor;
-import org.noir.guice.boot.executor.func.BeforeBindPostProcessor;
+
+import org.noir.guice.boot.executor.binder.ClassBinder;
+import org.noir.guice.boot.executor.binder.impl.AfterBindPostProcessorBinder;
+import org.noir.guice.boot.executor.binder.impl.BeforeBindPostProcessorBinder;
+import org.noir.guice.boot.executor.binder.impl.InstanceBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
+/**
+ * Auto bind executor
+ * 
+ * 实现自动绑定类到container容器，同时也是guice Module实现类，用于构造Injector
+ * 
+ * 默认构造binder并顺序执行:
+ * @see BeforeBindPostProcessorBinder
+ * @see InstanceBinder
+ * @see AfterBindPostProcessorBinder
+ * 
+ * @see org.noir.guice.boot.context.InjectorContext#refresh
+ */
 public class AutoBindExecutor implements Module {
     private static final Logger logger = LoggerFactory.getLogger(AutoBindExecutor.class);
 
-    private static class ClassContainer {
-        private final List<Class<?>> clazzList;
-        private final List<Class<BeforeBindPostProcessor>> beforeProcessors;
-        private final List<Class<AfterBindPostProcessor>> afterProcessors;
-
-        @SuppressWarnings("unchecked")
-        private ClassContainer(Set<Class<?>> clazzSet) {
-            clazzList = new ArrayList<>();
-            beforeProcessors = new ArrayList<>();
-            afterProcessors = new ArrayList<>();
-            for (Class<?> clazz : clazzSet) {
-                if (!clazz.isAnnotationPresent(Injectable.class)) {
-                    continue;
-                }
-                if (clazz.isAssignableFrom(BeforeBindPostProcessor.class)) {
-                    logger.info("Searched BeforeBindPostProcessor: {}", clazz.getName());
-                    beforeProcessors.add((Class<BeforeBindPostProcessor>) clazz);
-                } else if (clazz.isAssignableFrom(AfterBindPostProcessor.class)) {
-                    logger.info("Searched AfterBindPostProcessor: {}", clazz.getName());
-                    afterProcessors.add((Class<AfterBindPostProcessor>) clazz);
-                } else {
-                    logger.info("Searched injectable: {}", clazz.getName());
-                    clazzList.add(clazz);
-                }
-            }
-        }
+    /**
+     * Only create Module by factory
+     * @param classSet 类集合
+     * @return executor
+     */
+    public static AutoBindExecutor createModule(Set<Class<?>> classSet) {
+        return new AutoBindExecutor(classSet);
     }
 
     private boolean initialized = false;
-    private Binder binder;
-    private ClassContainer container;
+    private List<Class<?>> classes;
 
-    private AutoBindExecutor(Set<Class<?>> clazzSet) {
-        container = new ClassContainer(clazzSet);
-    }
-
-    protected void applyPostProcessorsBeforeInitialization() throws Exception {
-        for (Class<BeforeBindPostProcessor> beforeProcessor : container.beforeProcessors) {
-            BeforeBindPostProcessor beforeBindPostProcessor = beforeProcessor.getDeclaredConstructor().newInstance();
-            beforeBindPostProcessor.apply(container.clazzList, binder());
-            logger.info("Apply BeforeBindPostProcessor: {}", beforeProcessor.getName());
-            binder.bind(beforeProcessor).toInstance(beforeBindPostProcessor);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void initialization() {
-        for (Class<?> clazz : container.clazzList) {
-            Type[] genericInterfaces = clazz.getGenericInterfaces();
-            Injectable annotation = clazz.getAnnotation(Injectable.class);
-            for (Type genericInterface : genericInterfaces) {
-                AnnotatedBindingBuilder builder = binder.bind((TypeLiteral) TypeLiteral.get(genericInterface));
-                LinkedBindingBuilder linkedBindingBuilder = builder;
-                if (!annotation.named().equals("")) {
-                    linkedBindingBuilder = builder.annotatedWith(Names.named(annotation.named()));
-                }
-                linkedBindingBuilder.to(clazz).in(Scopes.SINGLETON);
-                logger.info("Bond injectable: {} to {}", genericInterface.getTypeName(), clazz.getName());
-            }
-            logger.info("Bond injectable: {}", clazz.getName());
-        }
-
-    }
-
-    protected void applyPostProcessorsAfterInitialization() throws Exception {
-        for (Class<AfterBindPostProcessor> afterPostProcessor : container.afterProcessors) {
-            AfterBindPostProcessor afterBindPostProcessor = afterPostProcessor.getDeclaredConstructor().newInstance();
-            afterBindPostProcessor.apply(container.clazzList, binder());
-            logger.info("Apply AfterBindPostProcessor: {}", afterPostProcessor.getName());
-            binder.bind(afterPostProcessor).toInstance(afterBindPostProcessor);
-        }
-    }
-
-    @Override
-    public void configure(Binder binder) {
-        this.binder = binder;
-        try {
-            applyPostProcessorsBeforeInitialization();
-            initialization();
-            applyPostProcessorsAfterInitialization();
-            container = null;
-            initialized = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            // pass
-        }
-    }
-
-    public Binder binder() {
-        return binder;
+    private AutoBindExecutor(Set<Class<?>> classSet) {
+        classes = new ArrayList<>(classSet);
     }
 
     public boolean isInitialized() {
         return initialized;
     }
 
-    public static AutoBindExecutor createModule(Set<Class<?>> clazzSet) {
-        return new AutoBindExecutor(clazzSet);
+    @Override
+    public void configure(Binder binder) {
+        try {
+            // ordering apply binder
+            for (ClassBinder classBinder : BINDERS) {
+                classBinder.apply(classes, binder);
+            }
+            initialized = true;
+        } catch (Exception e) {
+            logger.error("Failed to AutoBind class: ", e.getMessage());
+            e.printStackTrace();
+        }
     }
+
+    private static final ClassBinder[] BINDERS = new ClassBinder[] {
+        new BeforeBindPostProcessorBinder(),
+        new InstanceBinder(),
+        new AfterBindPostProcessorBinder(),
+    };
 }
