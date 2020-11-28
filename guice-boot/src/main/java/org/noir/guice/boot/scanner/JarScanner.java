@@ -1,5 +1,7 @@
 package org.noir.guice.boot.scanner;
 
+import com.google.common.base.Strings;
+
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -17,6 +19,12 @@ import java.util.jar.JarFile;
  */
 public class JarScanner implements ClassScanner {
 
+    public static JarScanner create() {
+        return new JarScanner();
+    }
+
+    private JarScanner() {
+    }
 
     @Override
     public Set<Class<?>> search(String packageName, Predicate<Class<?>> predicate) {

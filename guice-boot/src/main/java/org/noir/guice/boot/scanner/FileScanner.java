@@ -1,5 +1,7 @@
 package org.noir.guice.boot.scanner;
 
+import com.google.common.base.Strings;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,11 +16,14 @@ public class FileScanner implements ClassScanner {
 
     private final String classpath;
 
-    public FileScanner() {
-        classpath = DEFAULT_CLASSPATH;
+    public static FileScanner create(String classpath) {
+        if (Strings.isNullOrEmpty(classpath)) {
+            return new FileScanner(DEFAULT_CLASSPATH);
+        }
+        return new FileScanner(classpath);
     }
 
-    public FileScanner(String classpath) {
+    FileScanner(String classpath) {
         this.classpath = classpath;
     }
 
@@ -63,5 +68,4 @@ public class FileScanner implements ClassScanner {
         return new ClassSearcher().doPath(new File(searchPath), packageName, predicate, true);
     }
 
-    private static final String DEFAULT_CLASSPATH = FileScanner.class.getResource("/").getPath();
 }

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * Auto bind executor
+ * Auto bind executor
  * 
  * 实现自动绑定类到container容器，同时也是guice Module实现类，用于构造Injector
  * 
@@ -37,7 +37,7 @@ public class AutoBindExecutor implements Module {
     }
 
     private boolean initialized = false;
-    private List<Class<?>> classes;
+    private final List<Class<?>> classes;
 
     private AutoBindExecutor(Set<Class<?>> classSet) {
         classes = new ArrayList<>(classSet);
@@ -56,7 +56,7 @@ public class AutoBindExecutor implements Module {
             }
             initialized = true;
         } catch (Exception e) {
-            logger.error("Failed to AutoBind class: ", e.getMessage());
+            logger.error("Failed to AutoBind class: {}", e.getMessage());
             e.printStackTrace();
         }
     }

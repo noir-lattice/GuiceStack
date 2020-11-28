@@ -14,6 +14,8 @@ public interface ClassScanner {
 
     String CLASS_SUFFIX = ".class";
 
+    String DEFAULT_CLASSPATH = ClassScanner.class.getResource("/").getPath();
+
     /**
      * 扫描过滤获取类集合
      *

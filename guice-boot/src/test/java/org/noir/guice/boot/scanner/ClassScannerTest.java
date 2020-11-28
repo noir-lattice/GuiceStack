@@ -17,8 +17,8 @@ public class ClassScannerTest {
 
     @Before
     public void init() {
-        fileScanner = new FileScanner();
-        jarScanner = new JarScanner();
+        fileScanner = FileScanner.create(null);
+        jarScanner = JarScanner.create();
     }
 
     @Test
