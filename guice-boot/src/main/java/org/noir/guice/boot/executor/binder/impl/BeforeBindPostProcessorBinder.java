@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import com.google.inject.Binder;
 
 import org.noir.guice.boot.executor.binder.ClassBinder;
-import org.noir.guice.boot.executor.func.BeforeBindPostProcessor;
+import org.noir.guice.boot.executor.functionals.BeforeBindPostProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +19,12 @@ public class BeforeBindPostProcessorBinder implements ClassBinder {
     @Override
     public void apply(List<Class<?>> classes, Binder binder) {
         List<Class<?>> bindProcessorList = classes.stream().filter(this::isSupportClass).collect(Collectors.toList());
-        for (Class<?> beforProcessor : bindProcessorList) {
-            BeforeBindPostProcessor beforProcessorInstance = (BeforeBindPostProcessor) binder
-                    .getProvider(beforProcessor).get();
-            logger.info("Get BeforeBindPostProcessor: {}", beforProcessor.getName());
-            beforProcessorInstance.apply(classes, binder);
-            logger.info("Apply BeforeBindPostProcessor: {}", beforProcessor.getName());
+        for (Class<?> beforeProcessor : bindProcessorList) {
+            BeforeBindPostProcessor beforeProcessorInstance = (BeforeBindPostProcessor) binder
+                    .getProvider(beforeProcessor).get();
+            logger.info("Get BeforeBindPostProcessor: {}", beforeProcessor.getName());
+            beforeProcessorInstance.apply(classes, binder);
+            logger.info("Apply BeforeBindPostProcessor: {}", beforeProcessor.getName());
         }
     }
 

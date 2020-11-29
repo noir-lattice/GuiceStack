@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import com.google.inject.Binder;
 
 import org.noir.guice.boot.executor.binder.ClassBinder;
-import org.noir.guice.boot.executor.func.AfterBindPostProcessor;
+import org.noir.guice.boot.executor.functionals.AfterBindPostProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +20,10 @@ public class AfterBindPostProcessorBinder implements ClassBinder {
     public void apply(List<Class<?>> classes, Binder binder) {
         List<Class<?>> bindProcessorList = classes.stream().filter(this::isSupportClass).collect(Collectors.toList());
         for (Class<?> afterProcessor : bindProcessorList) {
-            AfterBindPostProcessor beforProcessorInstance = (AfterBindPostProcessor) binder
+            AfterBindPostProcessor afterBindPostProcessor = (AfterBindPostProcessor) binder
                     .getProvider(afterProcessor).get();
             logger.info("Get AfterBindPostProcessor: {}", afterProcessor.getName());
-            beforProcessorInstance.apply(classes, binder);
+            afterBindPostProcessor.apply(classes, binder);
             logger.info("Apply AfterBindPostProcessor: {}", afterProcessor.getName());
         }
     }

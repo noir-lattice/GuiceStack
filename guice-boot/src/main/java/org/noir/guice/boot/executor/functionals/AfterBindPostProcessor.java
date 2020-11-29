@@ -1,4 +1,4 @@
-package org.noir.guice.boot.executor.func;
+package org.noir.guice.boot.executor.functionals;
 
 import com.google.inject.Binder;
 
