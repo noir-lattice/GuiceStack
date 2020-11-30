@@ -1,8 +1,12 @@
 package org.noir.guice.boot.context;
 
+import org.noir.guice.boot.annotations.Injectable;
 import org.noir.guice.boot.executor.ScanExecutor;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Application context
@@ -17,14 +21,19 @@ import java.util.Set;
  */
 public class ApplicationContext {
 
-    private static String scanPackage;
+    private static List<String> scanPackage;
 
     public static boolean refresh() {
-        Set<Class<?>> clazzSet = ScanExecutor.getInstance().search(scanPackage);
+        Predicate<Class<?>> predicate = clazz -> clazz.getAnnotation(Injectable.class) != null;
+        Set<Class<?>> clazzSet = new HashSet<>();
+        for (String pkg :scanPackage){
+            Set<Class<?>> set = ScanExecutor.getInstance().search(pkg, predicate);
+            clazzSet.addAll(set);
+        }
         return InjectorContext.refresh(clazzSet);
     }
 
-    public static void setScanPackage(String scanPackage) {
+    public static void setScanPackage(List<String> scanPackage) {
         ApplicationContext.scanPackage = scanPackage;
     }
 }

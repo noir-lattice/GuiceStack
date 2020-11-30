@@ -26,21 +26,12 @@ import org.slf4j.LoggerFactory;
 public class InstanceBinder implements ClassBinder {
     private static final Logger logger = LoggerFactory.getLogger(BeforeBindPostProcessorBinder.class);
 
-    private Map<Type, List<Class<?>>> genericInterfaceImplMap = new HashMap<>(256);
+    private final Map<Type, List<Class<?>>> genericInterfaceImplMap = new HashMap<>(256);
 
     @Override
     public void apply(List<Class<?>> classes, Binder binder) {
-        classes = filterSupportClasses(classes);
         classes.forEach(this::analysisClassGeneric);
         bindGenericClass(binder);
-    }
-
-    private boolean isSupport(Class<?> clazz) {
-        return clazz.getAnnotation(Injectable.class) != null;
-    }
-
-    private List<Class<?>> filterSupportClasses(List<Class<?>> classes) {
-        return classes.stream().filter(this::isSupport).collect(Collectors.toList());
     }
 
     private void analysisClassGeneric(Class<?> clazz) {
