@@ -1,4 +1,4 @@
-package org.noir.guice.boot.eventbus;
+package org.noir.guice.eventbus;
 
 import java.util.UUID;
 

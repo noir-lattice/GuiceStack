@@ -1,7 +1,11 @@
 package org.noir.guice.boot.context;
 
 import org.noir.guice.boot.annotations.Injectable;
+import org.noir.guice.boot.event.ApplicationCloseEvent;
+import org.noir.guice.boot.event.RefreshEvent;
 import org.noir.guice.boot.executor.ScanExecutor;
+import org.noir.guice.eventbus.Event;
+import org.noir.guice.eventbus.EventPublisher;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,10 +34,20 @@ public class ApplicationContext {
             Set<Class<?>> set = ScanExecutor.getInstance().search(pkg, predicate);
             clazzSet.addAll(set);
         }
-        return InjectorContext.refresh(clazzSet);
+        boolean refresh = InjectorContext.refresh(clazzSet);
+        sendEvent(refresh ? RefreshEvent.REFRESH_EVENT : ApplicationCloseEvent.START_FAIL);
+        return refresh;
     }
 
     public static void setScanPackage(List<String> scanPackage) {
         ApplicationContext.scanPackage = scanPackage;
+        ApplicationContext.scanPackage.add(DEFAULT_APPLICATION_PKG);
     }
+
+    private static void sendEvent(Event event) {
+        EventPublisher eventPublisher = InjectorContext.get(EventPublisher.class);
+        eventPublisher.publishEvent(event);
+    }
+
+    private static final String DEFAULT_APPLICATION_PKG = "org.noir.guice";
 }

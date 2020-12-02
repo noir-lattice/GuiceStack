@@ -1,4 +1,4 @@
-package org.noir.guice.boot.eventbus;
+package org.noir.guice.eventbus;
 
 import com.google.common.eventbus.Subscribe;
 

@@ -1,4 +1,4 @@
-package org.noir.guice.boot.eventbus;
+package org.noir.guice.eventbus;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Binder;
@@ -6,7 +6,6 @@ import org.noir.guice.boot.annotations.Injectable;
 import org.noir.guice.boot.executor.functionals.AfterBindPostProcessor;
 
 import java.util.Collection;
-import java.util.stream.Stream;
 
 /**
  * @author noir

@@ -60,6 +60,7 @@ public class InstanceBinder implements ClassBinder {
         }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void bindTypeTargetWithName(Binder binder, Type type, Class<?> target, String name) {
         if (Strings.isNullOrEmpty(name)) {
             return;
