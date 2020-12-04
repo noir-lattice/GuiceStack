@@ -1,7 +1,5 @@
 package org.noir.guice.boot.scanner;
 
-import com.google.common.base.Strings;
-
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
