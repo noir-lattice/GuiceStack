@@ -5,7 +5,7 @@ import com.google.inject.Inject;
 import org.noir.guice.boot.annotations.Injectable;
 
 /**
- * @author yaoyuning
+ * @author noir
  * @date 2020/11/30 22:12
  */
 @Injectable

@@ -1,6 +1,6 @@
 package org.noir.guice.boot.context;
 
-import jdk.internal.misc.Unsafe;
+import sun.misc.Unsafe;
 import org.noir.guice.boot.event.ApplicationCloseEvent;
 import org.noir.guice.boot.executor.binder.impl.BeforeBindPostProcessorBinder;
 import org.noir.guice.eventbus.EventListener;
