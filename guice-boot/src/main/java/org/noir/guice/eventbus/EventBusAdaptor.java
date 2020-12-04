@@ -27,7 +27,12 @@ public class EventBusAdaptor implements AfterBindPostProcessor {
     }
 
     private boolean isSupport(Class<?> clazz) {
-        return clazz.isAssignableFrom(EventListener.class);
+        for (Class<?> interfaceClass : clazz.getInterfaces()) {
+            if (interfaceClass == EventListener.class) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
