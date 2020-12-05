@@ -21,6 +21,7 @@ public class GuiceBootApplication extends GracefullyCloseContext {
         Bootstrap annotation = clazz.getAnnotation(Bootstrap.class);
         if (Objects.isNull(annotation)) {
             logger.error("Bootstrap application class not find annotation, please check the boot file.");
+            throw new RuntimeException("Bootstrap application class not find annotation, please check the boot file.");
         } else {
             String[] scanPackage = annotation.scanPackage();
             List<String> scanPackageList = scanPackage.length > 0 ? Lists.newArrayList(scanPackage) : Lists.newArrayList(clazz.getPackageName());

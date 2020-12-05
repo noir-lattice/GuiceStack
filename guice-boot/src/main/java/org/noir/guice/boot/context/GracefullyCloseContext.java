@@ -1,6 +1,7 @@
 package org.noir.guice.boot.context;
 
-import sun.misc.Unsafe;
+import java.util.concurrent.locks.LockSupport;
+
 import org.noir.guice.boot.event.ApplicationCloseEvent;
 import org.noir.guice.boot.executor.binder.impl.BeforeBindPostProcessorBinder;
 import org.noir.guice.eventbus.EventListener;
@@ -16,16 +17,16 @@ public class GracefullyCloseContext implements EventListener<ApplicationCloseEve
     private static final Logger logger = LoggerFactory.getLogger(BeforeBindPostProcessorBinder.class);
 
     private static Thread mainThread;
-    private static final Unsafe U = Unsafe.getUnsafe();
+    private static final Object blocker = new Object();
 
     protected static void start() {
         mainThread = Thread.currentThread();
-        U.park(false, 0L);
+        LockSupport.park(blocker);
     }
 
     public static void close() {
         if (mainThread != null) {
-            U.unpark(mainThread);
+            LockSupport.unpark(mainThread);
         }
     }
 
