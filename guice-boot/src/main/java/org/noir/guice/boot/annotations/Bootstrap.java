@@ -3,7 +3,7 @@ package org.noir.guice.boot.annotations;
 import java.lang.annotation.*;
 
 /**
- * Bootstraper annotation
+ * Bootstrap annotation
  * 
  * 标示应用启动类并告知应用所在的包路径
  * @see org.noir.guice.boot.GuiceBootApplication
