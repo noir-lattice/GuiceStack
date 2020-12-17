@@ -24,4 +24,6 @@ public class ApplicationCloseEvent extends Event {
     }
 
     public static final ApplicationCloseEvent START_FAIL = ApplicationCloseEvent.of("Boot starting failed");
+
+    public static final ApplicationCloseEvent SHUTDOWN = ApplicationCloseEvent.of("Application shutdown");
 }

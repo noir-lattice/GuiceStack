@@ -24,7 +24,7 @@ public class GuiceBootApplication extends GracefullyCloseContext {
             throw new RuntimeException("Bootstrap application class not find annotation, please check the boot file.");
         } else {
             String[] scanPackage = annotation.scanPackage();
-            List<String> scanPackageList = scanPackage.length > 0 ? Lists.newArrayList(scanPackage) : Lists.newArrayList(clazz.getPackageName());
+            List<String> scanPackageList = scanPackage.length > 0 ? Lists.newArrayList(scanPackage) : Lists.newArrayList(clazz.getPackage().getName());
             ApplicationContext.setScanPackage(scanPackageList);
             boolean refreshed = ApplicationContext.refresh();
             if (refreshed) {

@@ -3,9 +3,12 @@ package org.noir.guice.boot.context;
 import org.noir.guice.boot.annotations.Injectable;
 import org.noir.guice.boot.event.ApplicationCloseEvent;
 import org.noir.guice.boot.event.RefreshEvent;
+import org.noir.guice.boot.executor.AutoBindExecutor;
 import org.noir.guice.boot.executor.ScanExecutor;
 import org.noir.guice.eventbus.Event;
 import org.noir.guice.eventbus.EventPublisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +28,15 @@ import java.util.function.Predicate;
  */
 public class ApplicationContext {
 
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Application shutdown");
+            sendEvent(ApplicationCloseEvent.SHUTDOWN);
+        }));
+    }
+
     private static List<String> scanPackage;
 
     public static boolean refresh() {
@@ -35,7 +47,13 @@ public class ApplicationContext {
             clazzSet.addAll(set);
         }
         boolean refresh = InjectorContext.refresh(clazzSet);
-        sendEvent(refresh ? RefreshEvent.REFRESH_EVENT : ApplicationCloseEvent.START_FAIL);
+        if (refresh) {
+            logger.info("Application started in: {}", Thread.currentThread().getName());
+            sendEvent(RefreshEvent.REFRESH_EVENT);
+        } else {
+            logger.info("Application start fail");
+            sendEvent(ApplicationCloseEvent.START_FAIL);
+        }
         return refresh;
     }
 

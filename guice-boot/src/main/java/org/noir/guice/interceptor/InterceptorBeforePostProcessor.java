@@ -29,7 +29,7 @@ public class InterceptorBeforePostProcessor implements BeforeBindPostProcessor {
     }
 
     private boolean isInterceptor(Class<?> clazz) {
-        return clazz.isAssignableFrom(GuiceInterceptor.class);
+        return GuiceInterceptor.class.isAssignableFrom(clazz);
     }
 
 }

@@ -4,6 +4,8 @@ import com.google.common.eventbus.EventBus;
 import com.google.inject.Binder;
 import org.noir.guice.boot.annotations.Injectable;
 import org.noir.guice.boot.executor.functionals.AfterBindPostProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -13,6 +15,9 @@ import java.util.Collection;
 @Injectable
 @SuppressWarnings("UnstableApiUsage")
 public class EventBusAdaptor implements AfterBindPostProcessor {
+
+    private final static Logger logger = LoggerFactory.getLogger(EventBusAdaptor.class);
+
     private EventBus eventBus;
 
     @Override
@@ -27,12 +32,11 @@ public class EventBusAdaptor implements AfterBindPostProcessor {
     }
 
     private boolean isSupport(Class<?> clazz) {
-        for (Class<?> interfaceClass : clazz.getInterfaces()) {
-            if (interfaceClass == EventListener.class) {
-                return true;
-            }
+        boolean isSupport = EventListener.class.isAssignableFrom(clazz);
+        if (isSupport) {
+            logger.info("Register event listener: " + clazz.getName());
         }
-        return false;
+        return isSupport;
     }
 
 }
