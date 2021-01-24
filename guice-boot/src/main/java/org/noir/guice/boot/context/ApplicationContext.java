@@ -3,7 +3,6 @@ package org.noir.guice.boot.context;
 import org.noir.guice.boot.annotations.Injectable;
 import org.noir.guice.boot.event.ApplicationCloseEvent;
 import org.noir.guice.boot.event.RefreshEvent;
-import org.noir.guice.boot.executor.AutoBindExecutor;
 import org.noir.guice.boot.executor.ScanExecutor;
 import org.noir.guice.eventbus.Event;
 import org.noir.guice.eventbus.EventPublisher;

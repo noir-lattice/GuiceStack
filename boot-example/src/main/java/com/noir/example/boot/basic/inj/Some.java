@@ -1,4 +1,4 @@
-package com.noir.example.boot.inj;
+package com.noir.example.boot.basic.inj;
 
 import org.noir.guice.boot.annotations.Injectable;
 
