@@ -1,5 +1,6 @@
 package org.noir.guice.boot.context;
 
+import com.google.inject.Module;
 import org.noir.guice.boot.annotations.Injectable;
 import org.noir.guice.boot.event.ApplicationCloseEvent;
 import org.noir.guice.boot.event.RefreshEvent;
@@ -16,16 +17,19 @@ import java.util.function.Predicate;
 
 /**
  * Application context
- * 
+ * <p>
  * 应用上下文，提供应用刷新能力
- * 
+ * <p>
  * 在刷新过程中，应用上下文的边界在于管理扫描路径，即认为的应用相关类的框架载入
  * 捞取到相关类后，将交由injector上下文进行IoC管理
- * 
+ *
  * @see ScanExecutor#search(String)
  * @see InjectorContext#refresh(Set)
  */
 public class ApplicationContext {
+
+    private ApplicationContext() {
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
 
@@ -38,14 +42,14 @@ public class ApplicationContext {
 
     private static List<String> scanPackage;
 
-    public static boolean refresh() {
+    public static boolean refresh(Module... modules) {
         Predicate<Class<?>> predicate = clazz -> clazz.getAnnotation(Injectable.class) != null;
         Set<Class<?>> clazzSet = new HashSet<>();
-        for (String pkg :scanPackage){
+        for (String pkg : scanPackage) {
             Set<Class<?>> set = ScanExecutor.getInstance().search(pkg, predicate);
             clazzSet.addAll(set);
         }
-        boolean refresh = InjectorContext.refresh(clazzSet);
+        boolean refresh = InjectorContext.refresh(clazzSet, modules);
         if (refresh) {
             logger.info("Application started in: {}", Thread.currentThread().getName());
             sendEvent(RefreshEvent.REFRESH_EVENT);

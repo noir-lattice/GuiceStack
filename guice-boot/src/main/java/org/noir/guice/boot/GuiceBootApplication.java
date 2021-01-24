@@ -1,6 +1,7 @@
 package org.noir.guice.boot;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Module;
 import org.noir.guice.boot.annotations.Bootstrap;
 import org.noir.guice.boot.context.ApplicationContext;
 import org.noir.guice.boot.context.GracefullyCloseContext;
@@ -17,7 +18,7 @@ public class GuiceBootApplication extends GracefullyCloseContext {
     private GuiceBootApplication() {
     }
 
-    public static void run(Class<?> clazz) {
+    public static void run(Class<?> clazz, Module... modules) {
         Bootstrap annotation = clazz.getAnnotation(Bootstrap.class);
         if (Objects.isNull(annotation)) {
             logger.error("Bootstrap application class not find annotation, please check the boot file.");
@@ -26,7 +27,7 @@ public class GuiceBootApplication extends GracefullyCloseContext {
             String[] scanPackage = annotation.scanPackage();
             List<String> scanPackageList = scanPackage.length > 0 ? Lists.newArrayList(scanPackage) : Lists.newArrayList(clazz.getPackage().getName());
             ApplicationContext.setScanPackage(scanPackageList);
-            boolean refreshed = ApplicationContext.refresh();
+            boolean refreshed = ApplicationContext.refresh(modules);
             if (refreshed) {
                 start();
             }
